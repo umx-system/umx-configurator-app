@@ -1,0 +1,56 @@
+# Local credentials and environment configuration
+.env
+.env.*
+!.env.example
+!.env.*.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Dependencies and generated output
+node_modules/
+.pnp.*
+dist/
+build/
+coverage/
+.cache/
+.next/
+.react-router/
+.vite/
+*.tsbuildinfo
+.shopify/
+.wrangler/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Runtime data and private assets
+data/
+uploads/
+storage/
+backups/
+logs/
+*.log
+*.sqlite
+*.sqlite3
+*.db
+*.sql.gz
+*.dump
+*.glb
+*.gltf
+*.blend
+*.blend1
+*.3dm
+
+# Local workspace files
+.DS_Store
+.idea/
+.vscode/
+.tmp/
+tmp/

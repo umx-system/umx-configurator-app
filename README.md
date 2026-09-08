@@ -2,7 +2,7 @@
 
 UMX 自研 Shopify 配置器管理 App，独立于店铺主题与客户配置器维护。目标是在 Shopify 后台集中管理模块模型、分类、用户可见范围和渠道价格，并向配置器提供经过服务端身份校验的目录与价格接口。
 
-**当前状态：应用框架检查通过，开发配置已在 Shopify 发布。** 使用 Shopify 官方 React Router + TypeScript 模板，包含 Shopify 登录、嵌入式页面、Prisma 会话存储和生命周期 Webhook 处理入口。临时 HTTPS 首页已验证可访问；店铺安装停在授权确认页，尚未完成真实嵌入式登录验收。模型、分类、渠道价格和客户身份接口尚未实现，PVE 尚未部署。详见 [本次验证记录](docs/scaffold-validation-20260908.md)。
+**当前状态：应用框架检查通过，已完成店铺安装及首次嵌入式登录验证，可以开始业务功能开发。** 使用 Shopify 官方 React Router + TypeScript 模板，包含 Shopify 登录、嵌入式页面、Prisma 会话存储和生命周期 Webhook 处理入口。用户安装后，浏览器已在 Shopify 后台的应用页面显示“配置器管理”首页。模型、分类、渠道价格和客户身份接口尚未实现，PVE 尚未部署。详见 [本次验证记录](docs/scaffold-validation-20260908.md)。
 
 应用显示名称：`Configurator Dashboard`。模板来源与许可证见 [模板来源](docs/template-origin.md)。
 
@@ -125,7 +125,7 @@ SQLite 当前只用于会话存储。容器默认数据库路径为 `/app/data/a
 ## 后续待确定
 
 - 模型管理业务数据库及文件存储；当前 SQLite 会话库不等于业务数据库已设计。
-- App 安装与管理会话、客户身份核验方式和最小 API 权限。
+- 管理会话续期与操作权限、客户身份核验方式和业务所需最小 API 权限。
 - 渠道价格在 Shopify 结账中的具体实现方式。
 - 部署域名、运行环境和目录接口契约。
 

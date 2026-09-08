@@ -32,3 +32,32 @@ model Session {
   refreshToken        String?
   refreshTokenExpires DateTime?
 }
+
+model ModelDraft {
+  id                       String   @id @default(uuid())
+  shop                     String
+  label                    String
+  shortLabel               String
+  catalogCode              String?
+  note                     String   @default("")
+  widthMm                  Float
+  depthMm                  Float
+  heightMm                 Float
+  frontWidthMm             Float?
+  gridWidth                Int
+  gridHeight               Int
+  placement                String   @default("grid")
+  placementYOffsetMm       Float    @default(0)
+  supportsMarineBoardColor Boolean  @default(false)
+  previewTransform         String   @default("scene")
+  fileKey                  String   @unique
+  fileName                 String
+  fileSize                 Int
+  fileSha256               String
+  revision                 Int      @default(1)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([shop, catalogCode])
+  @@index([shop, updatedAt])
+}

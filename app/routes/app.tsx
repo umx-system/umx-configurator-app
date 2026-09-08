@@ -20,7 +20,7 @@ export default function App() {
     <AppProvider embedded apiKey={apiKey}>
       <NavMenu>
         <a href="/app" rel="home">
-          概览
+          模型管理
         </a>
       </NavMenu>
       <Outlet />

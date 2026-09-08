@@ -2,7 +2,9 @@
 
 UMX 自研 Shopify 配置器管理 App，独立于店铺主题与客户配置器维护。目标是在 Shopify 后台集中管理模块模型、分类、用户可见范围和渠道价格，并向配置器提供经过服务端身份校验的目录与价格接口。
 
-**当前状态：仓库初始化。** 本仓库已记录需求与开发约定，尚未生成 App 脚手架、实现接口、连接 Shopify 或部署后端。
+**当前状态：应用框架检查通过，开发配置已在 Shopify 发布。** 使用 Shopify 官方 React Router + TypeScript 模板，包含 Shopify 登录、嵌入式页面、Prisma 会话存储和生命周期 Webhook 处理入口。临时 HTTPS 首页已验证可访问；店铺安装停在授权确认页，尚未完成真实嵌入式登录验收。模型、分类、渠道价格和客户身份接口尚未实现，PVE 尚未部署。详见 [本次验证记录](docs/scaffold-validation-20260908.md)。
+
+应用显示名称：`Configurator Dashboard`。模板来源与许可证见 [模板来源](docs/template-origin.md)。
 
 ## 项目分工
 
@@ -61,15 +63,68 @@ App 和配置器通过接口连接，分别开发、部署和回退。后续接�
 
 1. 阅读本文件和 [AGENTS.md](AGENTS.md)，确认当前任务的范围。
 2. 从 `main` 建立 `codex/功能名称` 分支；只修改当前任务相关文件。
-3. 先本地实现和验证，再进行 Shopify 开发环境及 PVE 部署验收。脚手架、开发命令和测试命令会在选定技术栈后补充。
+3. 先本地实现和验证，再进行 Shopify 开发环境及 PVE 部署验收。按下方命令操作，记录每一步实际结果。
 4. 每次完成代码修改都执行 `git commit`，使用中文说明变动和验证结果；只提交本次任务文件。
 5. 推送分支后通过 Pull Request 说明问题、修改结果、验证证据和未完成项。
 
 本仓库为公开仓库。只提交代码、文档和不含真实值的配置示例；密钥、店铺令牌、客户数据、真实渠道价格、模型原始资产、数据库备份和运行日志不提交到 Git。
 
+## 本地开发
+
+使用 Node.js 22 LTS（本项目 `.nvmrc` 固定为 `22.22.0`）。Shopify CLI `4.7.1` 安装在项目内，无需全局安装。
+
+```sh
+nvm use
+npm ci
+cp .env.example .env
+npm run setup
+npm run check
+```
+
+只有第一次初始化且不存在 `.env` 时才复制示例文件，避免覆盖已有凭据。`setup` 生成 Prisma 客户端并创建本地 SQLite 会话数据库；`check` 依次执行代码规范、类型检查和生产构建，不会创建 Shopify App 或修改店铺数据。
+
+用户已在 Dev Dashboard 创建应用。关联时选择这个现有应用，不能重复创建：
+
+```sh
+npm run config:link -- --client-id <现有应用的客户端ID> --file-name shopify.app.development.toml --force
+npm run dev -- --config development
+```
+
+此命令会覆盖本地 `shopify.app.development.toml`，仅在需要同步远端配置时使用，先保留尚未发布的本地配置调整。关联后检查该文件的应用名称、客户端 ID、嵌入设置、权限、Webhook 和回调地址，再启动开发。`shopify.app.toml` 是公开的占位配置；真实开发和生产配置、凭据、会话库均已加入 Git 忽略规则。
+
+如需单独获取凭据，运行 `npm exec -- shopify app env pull --config development`。当前 CLI 将命名配置的凭据写入 `.env.development`，并可能把值输出到终端；不要将输出复制到聊天或 Git。独立运行构建产物时，需要把相应运行变量放入进程环境，或妥善维护被忽略的 `.env`，不能误把示例空值当作真实凭据。
+
+`dev` 使用开发店铺和临时 HTTPS 隧道；登录授权与安装必须在浏览器完成。开发地址会随隧道变化，不应作为 PVE 的正式地址。当前不申请商品或客户数据权限，也没有模板的“创建演示商品”操作。
+
+| 命令 | 用途 |
+| --- | --- |
+| `npm run setup` | 生成会话存储客户端并执行迁移 |
+| `npm run check` | 代码规范、类型检查和生产构建 |
+| `npm run dev` | 启动 Shopify 开发环境，需要关联应用 |
+| `npm run config:link` | 关联 Dev Dashboard 中的现有 App |
+| `npm exec -- shopify --help` | 使用项目内 Shopify CLI |
+| `npm run start` | 启动已构建的服务，需要运行环境与凭据 |
+| `npm run deploy` | 发布 Shopify 配置和扩展；不会部署 PVE 后端 |
+
+GitHub Actions 自动执行安装、数据库初始化和 `check`，不持有店铺凭据，也不自动发布应用。
+
+本次浏览器配置联调使用构建后的服务配合 Cloudflare 临时隧道。独立启动本地构建产物可用：
+
+```sh
+node --env-file=.env node_modules/@react-router/serve/bin.js ./build/server/index.js
+```
+
+若隧道地址改变，必须同步本地 `SHOPIFY_APP_URL` 和 Shopify 中的应用 URL、登录回调。不能将已停止服务的临时地址当作有效部署。
+
+## 运行与部署边界
+
+`Dockerfile` 使用 Node.js 22，构建时安装完整依赖，运行时移除开发依赖并以非 root 用户运行。它是部署起点；PVE、Cloudflare 正式域名和生产数据库仍待配置及验收。
+
+SQLite 当前只用于会话存储。容器默认数据库路径为 `/app/data/app.sqlite`，运行时必须给 `/app/data` 挂载可写持久化卷。生产环境的备份、令牌存储保护、数据库选型和正式域名应在部署前落实。
+
 ## 后续待确定
 
-- Shopify App 脚手架、应用技术栈、数据库及文件存储。
+- 模型管理业务数据库及文件存储；当前 SQLite 会话库不等于业务数据库已设计。
 - App 安装与管理会话、客户身份核验方式和最小 API 权限。
 - 渠道价格在 Shopify 结账中的具体实现方式。
 - 部署域名、运行环境和目录接口契约。

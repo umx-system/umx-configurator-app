@@ -642,3 +642,49 @@
 .catalog-settings { max-width: 1120px; }
 .catalog-settings .panel-body > .config-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,400px),1fr)); align-items: start; }
 .release-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 20px 0; }
+
+.model-app th.audience-cell,
+.model-app td.audience-cell {
+  padding-inline: 12px;
+  text-align: center;
+}
+.audience-switch {
+  display: inline-flex;
+  align-items: center;
+  width: 40px;
+  height: 24px;
+  padding: 3px;
+  border: 0;
+  border-radius: 64px;
+  background: #1f1f1f;
+  cursor: pointer;
+}
+.audience-switch span {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #5a5a5a;
+}
+.audience-switch[aria-checked="true"] {
+  background: #dafc08;
+}
+.audience-switch[aria-checked="true"] span {
+  transform: translateX(16px);
+  background: #1f1f1f;
+}
+.audience-switch:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.audience-switch:focus-visible {
+  outline: 2px solid #1f1f1f;
+  outline-offset: 3px;
+}
+.audience-error {
+  display: block;
+  max-width: 200px;
+  white-space: normal;
+  color: #b42318;
+  font-size: 12px;
+  margin-top: 8px;
+}

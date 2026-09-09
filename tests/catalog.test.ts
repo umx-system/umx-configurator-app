@@ -1,3 +1,4 @@
+import { saveModelAudiences } from "../app/services/model-audiences.server";
 import { before, after, test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm, access } from "node:fs/promises";
@@ -269,4 +270,61 @@ test("publishing rejects dangling model references and cross-shop thumbnail refe
     models.save(shop, metadata, null, { bytes: glb(), name: "test.glb" }),
     /缩略图/,
   );
+});
+
+test("audience quick edits preserve model data and publication, allow all off, and reject cross-shop/stale/invalid writes", async () => {
+  const before = await db.modelDraft.findFirstOrThrow({
+    where: { shop, modelId: "TEST_MODULE" },
+  });
+  const publication = await catalog.readRelease(shop);
+  const input = { id: before.id, revision: before.revision, audiences: [] };
+  await assert.rejects(
+    saveModelAudiences(db, "other.myshopify.com", input),
+    /未找到/,
+  );
+  for (const invalid of [
+    { ...input, audiences: ["invalid"] },
+    { ...input, audiences: ["consumer", "consumer"] },
+    { ...input, enabled: false },
+  ]) {
+    await assert.rejects(saveModelAudiences(db, shop, invalid), /格式无效/);
+  }
+  assert.deepEqual(
+    await db.modelDraft.findUniqueOrThrow({ where: { id: before.id } }),
+    before,
+  );
+  const result = await saveModelAudiences(db, shop, input);
+  const after = await db.modelDraft.findUniqueOrThrow({
+    where: { id: before.id },
+  });
+  assert.equal(result.revision, before.revision + 1);
+  assert.deepEqual(JSON.parse(after.configJson), {
+    ...JSON.parse(before.configJson),
+    audiences: [],
+  });
+  assert.deepEqual(
+    {
+      ...after,
+      configJson: before.configJson,
+      revision: before.revision,
+      updatedAt: before.updatedAt,
+    },
+    before,
+  );
+  assert.deepEqual(await catalog.readRelease(shop), publication);
+  await assert.rejects(
+    saveModelAudiences(db, shop, { ...input, audiences: ["consumer"] }),
+    /已被更新/,
+  );
+  assert.deepEqual(
+    await db.modelDraft.findUniqueOrThrow({ where: { id: before.id } }),
+    after,
+  );
+  await assert.rejects(catalog.publish(shop, await fingerprint()));
+  const restored = await saveModelAudiences(db, shop, {
+    ...input,
+    revision: result.revision,
+    audiences: JSON.parse(before.configJson).audiences,
+  });
+  assert.equal(restored.revision, result.revision + 1);
 });

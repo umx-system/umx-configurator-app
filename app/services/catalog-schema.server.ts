@@ -25,7 +25,6 @@ export const modelConfigSchema = z
     sortOrder: number.int().min(0).max(100000),
     audiences: z
       .array(audienceSchema)
-      .min(1)
       .max(3)
       .refine((v) => new Set(v).size === v.length),
     prices: z

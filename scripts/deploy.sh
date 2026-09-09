@@ -31,6 +31,10 @@ if ! compose up -d --no-deps --wait --wait-timeout 120 app; then
 fi
 if [[ -n "$previous" ]]; then ln -sfn "$previous" "$root/previous"; fi
 ln -sfn "$candidate" "$root/current"
+sudo install -m 0644 "$candidate/deploy/umx-configurator-backup.service" /etc/systemd/system/
+sudo install -m 0644 "$candidate/deploy/umx-configurator-backup.timer" /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now umx-configurator-backup.timer
 curl --fail --silent http://127.0.0.1:3188/health
 printf '\nDeployed revision %s\n' "$release"
 REMOTE

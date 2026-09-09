@@ -1,0 +1,11 @@
+[Unit]
+Description=Back up UMX configurator and verify isolated restore
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/umx-configurator-app/current/scripts/backup.py
+ExecStopPost=-/usr/bin/docker unpause umx-configurator-app
+TimeoutStartSec=120
+UMask=0077

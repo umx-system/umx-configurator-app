@@ -2,7 +2,7 @@
 
 UMX 自研 Shopify 配置器管理 App，独立于店铺主题与客户配置器维护。目标是在 Shopify 后台集中管理模块模型、分类、用户可见范围和渠道价格，并向配置器提供经过服务端身份校验的目录与价格接口。
 
-**当前状态：模型目录迁移与 App 管理已实现，并完成开发主题联调。** 当前私有数据库包含 18 个模型（12 个模块、5 个配件、1 个独立产品）和 35 个图片／HDR 资源。尺寸、占格、分类、可见用户、各渠道预估价、材质、开合、坐标、配色、组合和商品对应关系可在 App 编辑，支持草稿、统一发布及历史回退。配置器源码与未发布开发主题已经读取 App；正式主题仍使用原版本。App 当前运行在本地临时隧道，PVE 尚未部署。详见 [目录迁移与验证记录](docs/managed-catalog-validation-20260909.md)。
+**当前状态：模型目录迁移与 App 管理已实现，并完成开发主题联调。** 当前私有数据库包含 18 个模型（12 个模块、5 个配件、1 个独立产品）和 35 个图片／HDR 资源。尺寸、占格、分类、可见用户、各渠道预估价、材质、开合、坐标、配色、组合和商品对应关系可在 App 编辑，支持草稿、统一发布及历史回退。配置器源码与未发布开发主题已经读取 App；正式主题仍使用原版本。App 已部署到 PVE VM 141 的独立容器，固定地址为 `https://umx-configurator.fredy.cc`，现有数据已迁移并完成备份恢复检查。详见 [目录迁移与验证记录](docs/managed-catalog-validation-20260909.md)。
 
 应用显示名称：`Configurator Dashboard`。模板来源与许可证见 [模板来源](docs/template-origin.md)。
 
@@ -52,7 +52,7 @@ App 和配置器通过接口连接，分别开发、部署和回退。后续接�
 
 ## 部署方向
 
-计划在 PVE 的独立虚拟机中通过 Docker 运行 App，由 Cloudflare Tunnel 提供公网 HTTPS 入口。此处描述目标方案，不代表已部署。
+App 已通过 Docker 部署于 PVE VM 141，服务目录 `/opt/umx-configurator-app`，由现有 PVE Cloudflare Tunnel 的独立域名路由提供 HTTPS 入口。
 
 - App 服务和数据库在后端运行；PVE 管理界面保留在内网。
 - 公开模型与缩略图优先使用 Shopify 文件存储或对象存储/CDN；大文件上传考虑直传。
@@ -135,7 +135,7 @@ node --env-file=.env node_modules/@react-router/serve/bin.js ./build/server/inde
 
 ## 运行与部署边界
 
-`Dockerfile` 使用 Node.js 22，构建时安装完整依赖，运行时移除开发依赖并以非 root 用户运行。它是部署起点；PVE、Cloudflare 正式域名和生产数据库仍待配置及验收。
+`Dockerfile` 使用 Node.js 22，构建时安装完整依赖，运行时移除开发依赖并以非 root 用户运行。它是部署起点；PVE 容器、固定 Cloudflare 域名和持久化 SQLite 已部署。
 
 SQLite 当前保存 Shopify 会话及模型草稿。容器默认数据库路径为 `/app/data/app.sqlite`，模型目录为 `/app/data/models`，运行时必须给 `/app/data` 挂载可写持久化卷。数据库和 GLB 文件需成对备份、恢复，文件目录不能映射成公开静态目录。生产环境的备份、令牌存储保护、数据库选型和正式域名应在部署前落实。
 
@@ -150,11 +150,11 @@ SQLite 当前保存 Shopify 会话及模型草稿。容器默认数据库路径�
 
 ## PVE 部署操作
 
-部署定义：`compose.yaml`；入口：`scripts/deploy.sh`；固定计划地址：`https://umx-configurator.fredy.cc`。VM 141 中 `/opt/umx-configurator-app` 保存独立版本、受保护环境配置和持久数据；仅开放宿主回环端口 3188，由 PVE 的 Cloudflare 通道访问容器。部署脚本只打包已提交代码，凭据和模型单独迁移，不进入镜像。`/health` 检查数据库及资源目录可用性；生产启动器不记录带 Shopify 会话参数的请求 URL。
+部署定义：`compose.yaml`；入口：`scripts/deploy.sh`；固定地址：`https://umx-configurator.fredy.cc`。VM 141 中 `/opt/umx-configurator-app` 保存独立版本、受保护环境配置和持久数据；仅开放宿主回环端口 3188，由 PVE 的 Cloudflare 通道访问容器。部署脚本只打包已提交代码，凭据和模型单独迁移，不进入镜像。`/health` 检查数据库及资源目录可用性；生产启动器不记录带 Shopify 会话参数的请求 URL。
 
 ```sh
 APP_SSH_KNOWN_HOSTS=/path/to/verified-known-hosts bash scripts/deploy.sh
 ssh pve-141-docker-host 'sudo python3 /opt/umx-configurator-app/current/scripts/backup.py'
 ```
 
-备份将 App 容器短暂暂停以生成数据库和文件的一致副本，随即恢复运行；压缩归档后在临时目录恢复，检查每个文件的 SHA-256 和 SQLite 完整性，保留最近 7 份。本机备份不代替异地备份。更新失败可用 `previous` 版本重新启动；涉及不兼容数据库变更时还需恢复配套数据快照。
+备份将 App 容器短暂暂停以生成数据库和文件的一致副本，随即恢复运行；压缩归档后在临时目录恢复，检查每个文件的 SHA-256 和 SQLite 完整性，保留最近 7 份。部署脚本安装每日 04:10（服务器时区，随机延迟最多 15 分钟）运行的 systemd 备份定时器，异常结束也会解除容器暂停。本机备份不代替异地备份。更新失败可用 `previous` 版本重新启动；涉及不兼容数据库变更时还需恢复配套数据快照。

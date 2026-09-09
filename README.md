@@ -2,7 +2,7 @@
 
 UMX 自研 Shopify 配置器管理 App，独立于店铺主题与客户配置器维护。目标是在 Shopify 后台集中管理模块模型、分类、用户可见范围和渠道价格，并向配置器提供经过服务端身份校验的目录与价格接口。
 
-**当前状态：模型目录迁移与 App 管理已实现，并完成开发主题联调。** 当前私有数据库包含 18 个模型（12 个模块、5 个配件、1 个独立产品）和 35 个图片／HDR 资源。尺寸、占格、分类、可见用户、各渠道预估价、材质、开合、坐标、配色、组合和商品对应关系可在 App 编辑，支持草稿、统一发布及历史回退。配置器源码与未发布开发主题已经读取 App；正式主题仍使用原版本。App 已部署到 PVE VM 141 的独立容器，固定地址为 `https://umx-configurator.fredy.cc`，现有数据已迁移并完成备份恢复检查。详见 [目录迁移与验证记录](docs/managed-catalog-validation-20260909.md)。
+**当前状态：模型目录迁移与 App 管理已实现，并完成开发主题联调。** 当前私有数据库包含 18 个模型（12 个模块、5 个配件、1 个独立产品）和 35 个图片／HDR 资源。尺寸、占格、分类、可见用户、各渠道预估价、材质、开合、坐标、配色、组合和商品对应关系可在 App 编辑，支持草稿、统一发布及历史回退。配置器源码与未发布开发主题已经读取 App；正式主题仍使用原版本。App 已部署到 PVE VM 141 的独立容器，固定地址为 `https://umx-configurator.fredy.cc`，现有数据已迁移并完成备份恢复检查。部署结果见 [PVE 部署验收](docs/pve-deployment-20260909.md)。目录迁移详见 [目录迁移与验证记录](docs/managed-catalog-validation-20260909.md)。
 
 应用显示名称：`Configurator Dashboard`。模板来源与许可证见 [模板来源](docs/template-origin.md)。
 
@@ -65,7 +65,7 @@ App 已通过 Docker 部署于 PVE VM 141，服务目录 `/opt/umx-configurator-
 
 1. 阅读本文件和 [AGENTS.md](AGENTS.md)，确认当前任务的范围。
 2. 从 `main` 建立 `codex/功能名称` 分支；只修改当前任务相关文件。
-3. 先本地实现和验证，再进行 Shopify 开发环境及 PVE 部署验收。按下方命令操作，记录每一步实际结果。
+3. 后续本地开发与 PVE 更新分别验证；生产数据以 PVE 为准，不再向停用的 Mac 数据副本写入。
 4. 每次完成代码修改都执行 `git commit`，使用中文说明变动和验证结果；只提交本次任务文件。
 5. 推送分支后通过 Pull Request 说明问题、修改结果、验证证据和未完成项。
 
@@ -111,7 +111,7 @@ npm run dev -- --config development
 
 GitHub Actions 自动执行安装、数据库初始化和 `check`，不持有店铺凭据，也不自动发布应用。
 
-本次浏览器配置联调使用构建后的服务配合 Cloudflare 临时隧道。独立启动本地构建产物可用：
+以下为迁移前的本地联调方式，当前运行地址已切到 PVE 固定域名。独立启动本地构建产物可用：
 
 ```sh
 node --env-file=.env node_modules/@react-router/serve/bin.js ./build/server/index.js

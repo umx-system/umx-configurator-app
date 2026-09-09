@@ -53,3 +53,7 @@ node --env-file=.env --import tsx scripts/import-catalog.ts /private/catalog-imp
 ```
 
 首次导入前备份数据库与资源目录。导入已有但不一致的记录会中止；浮点持久化的机器精度差异不视为业务修改。仅导入草稿，随后在 App 中检查并发布。
+
+## PVE 迁移更新
+
+上述本机临时隧道边界已于 2026-09-09 解除，App 与现有数据迁到 PVE VM 141，并启用固定域名和每日备份恢复检查。详见 [PVE 部署验收](pve-deployment-20260909.md)。正式店铺模板仍未切换。

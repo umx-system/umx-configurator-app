@@ -18,7 +18,7 @@ COPY --from=build --chown=node:node /app/node_modules ./node_modules
 COPY --from=build --chown=node:node /app/build ./build
 COPY --from=build --chown=node:node /app/prisma ./prisma
 COPY --from=build --chown=node:node /app/scripts ./scripts
-RUN mkdir -p /app/data && chown node:node /app/data
+RUN mkdir -p /app/data/models /app/data/catalog-assets && chown -R node:node /app/data
 USER node
 EXPOSE 3000
 # Mount /app/data: both the SQLite database and private GLB files live here.

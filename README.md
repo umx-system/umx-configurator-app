@@ -147,3 +147,14 @@ SQLite 当前保存 Shopify 会话及模型草稿。容器默认数据库路径�
 - 部署域名、运行环境和目录接口契约。
 
 公开仓库与 Shopify App 的分发方式是两回事；建立公开仓库不表示已上架 Shopify App Store。
+
+## PVE 部署操作
+
+部署定义：`compose.yaml`；入口：`scripts/deploy.sh`；固定计划地址：`https://umx-configurator.fredy.cc`。VM 141 中 `/opt/umx-configurator-app` 保存独立版本、受保护环境配置和持久数据；仅开放宿主回环端口 3188，由 PVE 的 Cloudflare 通道访问容器。部署脚本只打包已提交代码，凭据和模型单独迁移，不进入镜像。`/health` 检查数据库及资源目录可用性；生产启动器不记录带 Shopify 会话参数的请求 URL。
+
+```sh
+APP_SSH_KNOWN_HOSTS=/path/to/verified-known-hosts bash scripts/deploy.sh
+ssh pve-141-docker-host 'sudo python3 /opt/umx-configurator-app/current/scripts/backup.py'
+```
+
+备份将 App 容器短暂暂停以生成数据库和文件的一致副本，随即恢复运行；压缩归档后在临时目录恢复，检查每个文件的 SHA-256 和 SQLite 完整性，保留最近 7 份。本机备份不代替异地备份。更新失败可用 `previous` 版本重新启动；涉及不兼容数据库变更时还需恢复配套数据快照。

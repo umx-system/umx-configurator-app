@@ -1,0 +1,47 @@
+name: umx-configurator
+services:
+  app:
+    build: .
+    image: umx-configurator-app:${APP_RELEASE:-local}
+    container_name: umx-configurator-app
+    restart: unless-stopped
+    init: true
+    env_file: ${APP_ENV_FILE:-/opt/umx-configurator-app/.env}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DATABASE_URL: file:/app/data/app.sqlite
+      MODEL_STORAGE_DIR: /app/data/models
+      CATALOG_ASSET_DIR: /app/data/catalog-assets
+    volumes:
+      - ${APP_DATA_PATH:-/opt/umx-configurator-app/data}:/app/data
+    ports:
+      - 127.0.0.1:3188:3000
+    networks: [tunnel]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 128
+    healthcheck:
+      test:
+        [
+          CMD,
+          node,
+          -e,
+          "fetch('http://127.0.0.1:3000/health').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: 5m
+        max-file: "3"
+networks:
+  tunnel:
+    external: true
+    name: umx-shopify-image_default

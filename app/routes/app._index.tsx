@@ -1,3 +1,4 @@
+import { publishedModelRevisions } from "../services/catalog-status.server";
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { data, Form, Link, useLoaderData, useNavigation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
@@ -16,13 +17,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
   const [drafts, count] = await models.list(session.shop, search, page);
   return data(
-    { drafts, count, search, page },
+    {
+      drafts,
+      count,
+      search,
+      page,
+      published: await publishedModelRevisions(session.shop),
+    },
     { headers: { "Cache-Control": "private, no-store" } },
   );
 }
 
 export default function ModelLibrary() {
-  const { drafts, count, search, page } = useLoaderData<typeof loader>();
+  const { drafts, count, search, page, published } =
+    useLoaderData<typeof loader>();
   const navigation = useNavigation();
   return (
     <main className="model-app">
@@ -30,8 +38,11 @@ export default function ModelLibrary() {
         <div>
           <span className="eyebrow">UMX / MODEL LIBRARY</span>
           <h1>模型管理</h1>
-          <p>维护模块模型与参数，从一份草稿开始。</p>
+          <p>维护全部模块、配件与独立产品，发布后由配置器读取。</p>
         </div>
+        <Link className="button" to="/app/catalog">
+          目录设置与发布
+        </Link>
         <Link className="button primary" to="/app/models/new">
           ＋ 新建模型
         </Link>
@@ -42,7 +53,7 @@ export default function ModelLibrary() {
             <h2>
               模型草稿 <span className="count">{count}</span>
             </h2>
-            <p>草稿仅在管理后台保存，尚未发布到配置器。</p>
+            <p>修改保存为草稿，在目录设置中统一发布或恢复历史版本。</p>
           </div>
           <Form method="get" className="search-form" role="search">
             <label className="sr-only" htmlFor="search">
@@ -92,7 +103,13 @@ export default function ModelLibrary() {
                       </span>
                     </td>
                     <td className="mono">
-                      {draft.widthMm} × {draft.depthMm} × {draft.heightMm}
+                      {[draft.widthMm, draft.depthMm, draft.heightMm]
+                        .map((n) =>
+                          new Intl.NumberFormat("en", {
+                            maximumFractionDigits: 4,
+                          }).format(n),
+                        )
+                        .join(" × ")}
                       <span className="cell-detail">宽 × 深 × 高</span>
                     </td>
                     <td>
@@ -114,7 +131,13 @@ export default function ModelLibrary() {
                       <span className="cell-detail">修订 {draft.revision}</span>
                     </td>
                     <td>
-                      <span className="draft-badge">草稿</span>
+                      <span className="draft-badge">
+                        {published[draft.id] === draft.revision
+                          ? "已发布"
+                          : published[draft.id]
+                            ? "有未发布修改"
+                            : "未发布"}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -154,7 +177,7 @@ export default function ModelLibrary() {
         )}
       </section>
       <p className="library-footnote">
-        先建立模型资料，再逐步配置分类、用户可见范围与渠道价格。
+        模型文件与目录数据保存在 App，前端只读取当前用户可见的发布目录。
       </p>
     </main>
   );

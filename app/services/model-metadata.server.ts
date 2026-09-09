@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseModelConfig } from "./catalog-schema.server";
 
 const numberField = (min: number, max: number, integer = false) =>
   z
@@ -17,6 +18,11 @@ const numberField = (min: number, max: number, integer = false) =>
     );
 
 export const modelMetadataSchema = z.object({
+  modelId: z.string().trim().regex(/^[A-Za-z0-9_-]{0,80}$/, "模型编号只允许字母、数字、下划线和短横线").transform(v => v || null),
+  configJson: z.string().max(48000).transform((value, ctx) => {
+    try { return JSON.stringify(parseModelConfig(value)); }
+    catch (error) { ctx.addIssue({ code: "custom", message: error instanceof z.ZodError ? error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("；") : "模型设置格式无效" }); return z.NEVER; }
+  }),
   label: z
     .string()
     .trim()

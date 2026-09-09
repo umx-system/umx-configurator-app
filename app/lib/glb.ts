@@ -14,11 +14,11 @@ export function inspectGlb(bytes: Uint8Array) {
   const jsonLength = view.getUint32(12, true);
   if (
     view.getUint32(16, true) !== 0x4e4f534a ||
-    jsonLength > 2 * 1024 * 1024 ||
+    jsonLength > 8 * 1024 * 1024 ||
     jsonLength % 4 ||
     20 + jsonLength > bytes.byteLength
   )
-    throw new Error("GLB 描述数据无效或超过 2 MB");
+    throw new Error("GLB 描述数据无效或超过 8 MB");
   let document: Record<string, unknown>;
   try {
     document = JSON.parse(

@@ -3,6 +3,7 @@ import { mkdir, writeFile, readFile, unlink } from "node:fs/promises";
 import path from "node:path";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import type { ModelMetadata } from "../lib/model-contract";
+import { parseModelConfig } from "./catalog-schema.server";
 import { DraftError, validateGlb } from "./model-upload.server";
 
 export function createModelDraftService(db: PrismaClient, directory: string) {
@@ -64,6 +65,10 @@ export function createModelDraftService(db: PrismaClient, directory: string) {
       identity: { id: string; revision: number } | null,
       upload: { bytes: Uint8Array; name: string } | null,
     ) => {
+      const config = parseModelConfig(metadata.configJson);
+      const assetIds = [config.thumbnailAssetId, config.thumbnailLightAssetId].filter(Boolean);
+      if (assetIds.length && await db.catalogAsset.count({ where: { shop, id: { in: [...new Set(assetIds)] }, mimeType: { startsWith: "image/" } } }) !== new Set(assetIds).size)
+        throw new DraftError("缩略图不存在或不属于当前店铺");
       const previous = identity ? await get(shop, identity.id) : null;
       if (previous && previous.revision !== identity?.revision)
         throw new DraftError(
@@ -142,7 +147,7 @@ export function createModelDraftService(db: PrismaClient, directory: string) {
           throw new DraftError("模块编码已存在，请换一个编码", 409);
         throw error;
       }
-      if (newKey && previous) {
+      if (newKey && previous && !await db.catalogRelease.count({ where: { shop, json: { contains: previous.fileKey } } })) {
         // A cleanup failure must not report a failed save after the DB committed.
         await remove(previous.fileKey).catch(() =>
           console.error("model_draft_old_file_cleanup_failed"),

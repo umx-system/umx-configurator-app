@@ -1,3 +1,4 @@
+import { defaultModelConfig } from "./model-config";
 import type { z } from "zod";
 import type { modelMetadataSchema } from "../services/model-metadata.server";
 
@@ -14,6 +15,8 @@ export type SaveResult =
   | { ok: false; message: string; errors?: FieldErrors };
 
 export const emptyModelForm: ModelFormValues = {
+  modelId: "",
+  configJson: JSON.stringify(defaultModelConfig()),
   label: "",
   shortLabel: "",
   catalogCode: "",

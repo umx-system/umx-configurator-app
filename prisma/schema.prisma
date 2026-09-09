@@ -36,6 +36,8 @@ model Session {
 model ModelDraft {
   id                       String   @id @default(uuid())
   shop                     String
+  modelId                  String?
+  configJson               String   @default("{}")
   label                    String
   shortLabel               String
   catalogCode              String?
@@ -59,5 +61,39 @@ model ModelDraft {
   updatedAt                DateTime @updatedAt
 
   @@unique([shop, catalogCode])
+  @@unique([shop, modelId])
   @@index([shop, updatedAt])
+}
+
+model CatalogAsset {
+  id        String   @id @default(uuid())
+  shop      String
+  name      String
+  mimeType  String
+  fileKey   String   @unique
+  size      Int
+  sha256    String
+  createdAt DateTime @default(now())
+  @@index([shop])
+}
+
+model CatalogSettings {
+  shop      String   @id
+  json      String
+  revision  Int      @default(1)
+  updatedAt DateTime @updatedAt
+}
+
+model CatalogRelease {
+  id        String   @id @default(uuid())
+  shop      String
+  json      String
+  createdAt DateTime @default(now())
+  @@index([shop, createdAt])
+}
+
+model CatalogPublication {
+  shop      String   @id
+  releaseId String
+  updatedAt DateTime @updatedAt
 }

@@ -1,3 +1,5 @@
+import { ConfigFields, type AssetOption } from "./ConfigFields";
+import { AssetUpload } from "./AssetUpload";
 import {
   lazy,
   Suspense,
@@ -29,13 +31,23 @@ function initialValues(draft: ModelDraft | null): ModelFormValues {
   if (!draft) return { ...emptyModelForm };
   return Object.fromEntries(
     Object.keys(emptyModelForm).map((key) => {
-      const value = draft[key as keyof ModelDraft];
+      const value =
+        key === "configJson" && draft.configJson === "{}"
+          ? emptyModelForm.configJson
+          : draft[key as keyof ModelDraft];
       return [key, value == null ? "" : String(value)];
     }),
   ) as ModelFormValues;
 }
 
-export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
+export function ModelEditor({
+  draft,
+  initialAssets,
+}: {
+  draft: ModelDraft | null;
+  initialAssets: AssetOption[];
+}) {
+  const [assets, setAssets] = useState(initialAssets);
   const [values, setValues] = useState(() => initialValues(draft));
   const [file, setFile] = useState<File | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -240,6 +252,9 @@ export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
                   file={file}
                   draftId={draft?.id}
                   transform={values.previewTransform}
+                  correctionJson={JSON.stringify(
+                    JSON.parse(values.configJson).render,
+                  )}
                   onReady={setPreviewReady}
                 />
               </Suspense>
@@ -314,17 +329,48 @@ export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
                 </label>
                 <p className="hint">
                   现有 Rhino 模块请选择 UMX Rhino；预览朝向以 −Z
-                  为正面。尺寸参数单独保存，不拉伸原模型。
+                  为正面。尺寸参数单独保存，不拉伸原模型；缩放、旋转和微调会实时预览。材质与开合在发布后的配置器中验收。
                 </p>
               </div>
             </section>
             <div className="parameters-column">
               <section className="model-panel parameter-panel">
                 <div className="panel-heading">
+                  <h2>目录、用户与模型行为</h2>
+                </div>
+                <div className="panel-body">
+                  <AssetUpload
+                    onUploaded={(a) =>
+                      setAssets((previous) => [a, ...previous])
+                    }
+                  />
+                  <ConfigFields
+                    value={JSON.parse(values.configJson)}
+                    assets={assets}
+                    onChange={(v) => change("configJson", JSON.stringify(v))}
+                  />
+                  {errors.configJson && (
+                    <p className="field-error">{errors.configJson[0]}</p>
+                  )}
+                  {errors.modelId && (
+                    <p className="field-error">{errors.modelId[0]}</p>
+                  )}
+                  <p className="hint">
+                    渠道价格用于配置器预估。Shopify
+                    实际结账价格由对应商品与交易规则决定。
+                  </p>
+                </div>
+              </section>
+              <section className="model-panel parameter-panel">
+                <div className="panel-heading">
                   <h2>基本信息</h2>
                   <span className="subtle">01</span>
                 </div>
                 <div className="panel-body">
+                  {field("modelId", "稳定模型编号", {
+                    maxLength: 80,
+                    placeholder: "例如 UMX_MODULE_01",
+                  })}
                   {field("label", "模块名称", {
                     required: true,
                     maxLength: 120,
@@ -341,7 +387,7 @@ export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
                     })}
                   </div>
                   <p className="hint">
-                    编码用于后续关联配置器，每个店铺内保持唯一。
+                    模型编号关联已有组合，请保持稳定；目录编码用于日常管理。
                   </p>
                 </div>
               </section>
@@ -446,9 +492,7 @@ export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
                     />
                     <span>支持海洋板颜色切换</span>
                   </label>
-                  <p className="hint">
-                    记录模块可用能力；颜色切换效果将在接入配置器时应用。
-                  </p>
+                  <p className="hint">发布后，配置器根据此设置启用颜色切换。</p>
                   <label className="field">
                     <span>备注</span>
                     <textarea
@@ -477,7 +521,7 @@ export function ModelEditor({ draft }: { draft: ModelDraft | null }) {
               ? `已保存 · 修订 ${draft.revision}`
               : "填写标有 * 的必填参数后保存"}
         </span>
-        <span>分类、可见范围与渠道价格将在后续接入</span>
+        <span>保存为草稿后，在「目录设置与发布」统一发布。</span>
       </footer>
       {blocker.state === "blocked" && (
         <div className="modal-backdrop">

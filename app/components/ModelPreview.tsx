@@ -40,14 +40,22 @@ export default function ModelPreview({
   draftId,
   transform,
   onReady,
+  correctionJson,
 }: {
   file: File | null;
   draftId?: string;
   transform: "scene" | "rhino";
   onReady: (ready: boolean) => void;
+  correctionJson: string;
 }) {
   const container = useRef<HTMLDivElement>(null);
   const resetView = useRef<() => void>(() => {});
+  const updateCorrection = useRef<() => void>(() => {});
+  const correction = useRef(correctionJson);
+  useEffect(() => {
+    correction.current = correctionJson;
+    updateCorrection.current();
+  }, [correctionJson]);
   const [status, setStatus] = useState<{
     phase: "loading" | "ready" | "error";
     message: string;
@@ -131,7 +139,9 @@ export default function ModelPreview({
       content.position.set(-center.x, -box.min.y, -center.z);
       const scene = new THREE.Scene();
       scene.background = new THREE.Color("#f4f4f2");
-      scene.add(content);
+      const corrected = new THREE.Group();
+      corrected.add(content);
+      scene.add(corrected);
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -163,6 +173,30 @@ export default function ModelPreview({
       controls.minDistance = extent * 0.15;
       controls.maxDistance = extent * 15;
       const render = () => renderer?.render(scene, camera);
+      updateCorrection.current = () => {
+        const { scale, rotationDeg, offsetMm } = JSON.parse(correction.current);
+        if (
+          ![
+            ...Object.values(scale),
+            ...Object.values(rotationDeg),
+            ...Object.values(offsetMm),
+          ].every((v) => typeof v === "number" && Number.isFinite(v))
+        )
+          return;
+        corrected.scale.set(scale.x, scale.y, scale.z);
+        corrected.rotation.set(
+          (rotationDeg.x * Math.PI) / 180,
+          (rotationDeg.y * Math.PI) / 180,
+          (rotationDeg.z * Math.PI) / 180,
+        );
+        corrected.position.set(
+          offsetMm.x / 1000,
+          offsetMm.y / 1000,
+          offsetMm.z / 1000,
+        );
+        render();
+      };
+      updateCorrection.current();
       controls.addEventListener("change", render);
       const fit = () => {
         const distance =
@@ -216,6 +250,7 @@ export default function ModelPreview({
       controls?.dispose();
       draco.dispose();
       resetView.current = () => {};
+      updateCorrection.current = () => {};
       if (loaded) disposeModel(loaded);
       if (grid) {
         grid.geometry.dispose();

@@ -12,17 +12,19 @@ import { models } from "../services/models.server";
 import { DraftError } from "../services/model-upload.server";
 import { ModelEditor } from "../components/ModelEditor";
 import "../styles/models.css";
+import db from "../db.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
+  const assets = await db.catalogAsset.findMany({ where: { shop: session.shop }, select: { id: true, name: true, mimeType: true }, orderBy: { createdAt: "desc" } });
   if (params.id === "new")
     return data(
-      { draft: null },
+      { draft: null, assets },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   try {
     return data(
-      { draft: await models.get(session.shop, params.id!) },
+      { draft: await models.get(session.shop, params.id!), assets },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error) {
@@ -33,11 +35,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 }
 
 export default function ModelEditorRoute() {
-  const { draft } = useLoaderData<typeof loader>();
+  const { draft, assets } = useLoaderData<typeof loader>();
   return (
     <ModelEditor
       key={draft ? `${draft.id}-${draft.revision}` : "new"}
       draft={draft}
+      initialAssets={assets}
     />
   );
 }

@@ -632,3 +632,13 @@
     animation: none;
   }
 }
+.config-fields { display: grid; gap: 18px; }
+.config-group { border: 1px solid var(--border, #deded8); border-radius: 8px; padding: 14px; margin: 8px 0; min-width: 0; }
+.config-group summary { cursor: pointer; font-weight: 600; overflow-wrap: anywhere; }
+.config-group .panel-body { padding: 16px 0 0; display: grid; gap: 12px; }
+.config-array-item { padding: 12px 0; border-bottom: 1px solid #e4e4df; }
+.map-editor { display: flex; flex-wrap: wrap; gap: 6px; }
+.asset-upload { margin-bottom: 20px; }
+.catalog-settings { max-width: 1120px; }
+.catalog-settings .panel-body > .config-fields { grid-template-columns: repeat(auto-fit,minmax(min(100%,400px),1fr)); align-items: start; }
+.release-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin: 20px 0; }

@@ -1,0 +1,192 @@
+{
+  "defaultPresetId": "test-preset",
+  "defaultWoodColor": "Gray",
+  "defaultConnectorColor": "Silver",
+  "copy": {
+    "categories": {},
+    "colors": {}
+  },
+  "grid": {
+    "xMm": 420,
+    "yMm": 215,
+    "frontSign": -1,
+    "gapMm": 20
+  },
+  "connectorColors": {
+    "Silver": "#cccccc"
+  },
+  "woodColors": {
+    "Gray": "#333333"
+  },
+  "materials": {
+    "silverSwatch": "#d3d3d4",
+    "anodizedColor": "#a9a9a9",
+    "anodizedRoughness": 0.33,
+    "metalEnvIntensity": 1,
+    "glassEnvIntensity": 1,
+    "marineMetalness": 0,
+    "marineRoughness": 0.68,
+    "marineEnvIntensity": 0.18,
+    "marineSpecularIntensity": 0.08,
+    "marineSwatchFidelity": 0.8,
+    "speakerBlack": "#000000",
+    "speakerInner": "#303538",
+    "speakerMetalness": 0.08,
+    "speakerRoughness": 0.58,
+    "speakerEnvIntensity": 0.28,
+    "boardMinThicknessM": 0.01,
+    "boardMaxThicknessM": 0.04,
+    "boardMinWidthM": 0.24,
+    "boardMinHeightM": 0.08,
+    "dividerMinM": {
+      "x": 0.026,
+      "y": 0.385,
+      "z": 0.278
+    },
+    "dividerMaxM": {
+      "x": 0.032,
+      "y": 0.402,
+      "z": 0.294
+    },
+    "glassMinTransmission": 0.92,
+    "glassThicknessM": 0.006,
+    "glassMaxRoughness": 0.2
+  },
+  "assembly": {
+    "mountDropMm": 10.94,
+    "outerWidthMm": 64.002683,
+    "outerRightMm": 13,
+    "outerLeftMm": -33,
+    "centerXMm": -10,
+    "outerYMm": -8.5,
+    "centerYMm": -8.88,
+    "connectorZMm": 175,
+    "rodXMm": 200,
+    "rodYMm": -8.5,
+    "rodRightMm": 12.75,
+    "rodLeftMm": -32.75,
+    "supportRightMm": 11.3,
+    "supportLeftMm": -31.3,
+    "casterZMm": 197.32,
+    "footZMm": 175
+  },
+  "aquarium": {
+    "fps": 10,
+    "fishCount": 2,
+    "insetM": 0.012,
+    "waterHeightRatio": 0.78,
+    "fishHeightRatio": 0.48,
+    "waterColor": "#69a9b4",
+    "waterOpacity": 0.3,
+    "fishColor": "#d8342f",
+    "speed": 1
+  },
+  "viewer": {
+    "VIEWER_GRID_SIZE_M": 32,
+    "VIEWER_GRID_DIVISIONS": 128,
+    "VIEWER_FLOOR_SIZE_M": 40,
+    "VIEWER_GRID_MAJOR_EVERY": 4,
+    "VIEWER_GRID_MEDIUM_EVERY": 2,
+    "VIEWER_GRID_CROSS_ARMS_M": [
+      0.043,
+      0.031,
+      0.021
+    ],
+    "VIEWER_GRID_CENTER_DASHES_M": [
+      0.058,
+      0.043,
+      0.03
+    ],
+    "VIEWER_GRID_POINTER_RADIUS_M": 1.35,
+    "VIEWER_FOG_NEAR_M": 10,
+    "VIEWER_FOG_FAR_M": 24,
+    "VIEWER_GRID_PALETTES": {
+      "light": [
+        10791596,
+        12830664,
+        14474975
+      ],
+      "dark": [
+        6449259,
+        4475212,
+        3159094
+      ]
+    },
+    "LIGHTING_PROFILES": {
+      "light": {
+        "exposure": 0.96,
+        "environment": 1,
+        "hemisphere": 0.85,
+        "key": 3,
+        "rim": 1.5,
+        "sky": 16777215,
+        "ground": 7828332,
+        "keyColor": 16777215,
+        "rimColor": 14477567
+      },
+      "dark": {
+        "exposure": 0.72,
+        "environment": 0.58,
+        "hemisphere": 0.4,
+        "key": 1.8,
+        "rim": 0.65,
+        "sky": 10135470,
+        "ground": 2106150,
+        "keyColor": 14081505,
+        "rimColor": 9149354
+      },
+      "blackRender": {
+        "exposure": 0.82,
+        "environment": 0.72,
+        "hemisphere": 0.48,
+        "key": 2.2,
+        "rim": 0.9,
+        "sky": 11450301,
+        "ground": 1118997,
+        "keyColor": 14147040,
+        "rimColor": 9412008
+      }
+    }
+  },
+  "bundles": {
+    "parentToComponentFinish": {},
+    "bundles": []
+  },
+  "bundleSettings": {
+    "PARENT_FINISH_BY_WOOD_COLOR": {},
+    "WOOD_COLOR_BY_PARENT_FINISH": {},
+    "EXTRA_BUNDLE_LAYOUTS": {}
+  },
+  "environmentAssetId": "00000000-0000-4000-8000-000000000001",
+  "presets": [
+    {
+      "id": "test-preset",
+      "label": "Test",
+      "description": "Test",
+      "localizedCopy": {},
+      "previewAssetId": "00000000-0000-4000-8000-000000000001",
+      "previewPosition": "50% 50%",
+      "modules": [
+        {
+          "instanceId": "a",
+          "moduleId": "TEST_MODULE",
+          "x": 0,
+          "y": 0,
+          "rotation": 0
+        }
+      ]
+    }
+  ],
+  "inventory": {
+    "parts": [
+      {
+        "id": "PRIVATE-PART",
+        "nameZh": "\u6d4b\u8bd5\u96f6\u4ef6",
+        "nameEn": "Test part",
+        "material": "anodized-aluminum",
+        "dimensionsMm": "1"
+      }
+    ],
+    "boms": []
+  }
+}

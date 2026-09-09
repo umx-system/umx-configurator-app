@@ -1,0 +1,10 @@
+ALTER TABLE "ModelDraft" ADD COLUMN "modelId" TEXT;
+ALTER TABLE "ModelDraft" ADD COLUMN "configJson" TEXT NOT NULL DEFAULT '{}';
+CREATE UNIQUE INDEX "ModelDraft_shop_modelId_key" ON "ModelDraft"("shop", "modelId");
+CREATE TABLE "CatalogAsset" ("id" TEXT NOT NULL PRIMARY KEY, "shop" TEXT NOT NULL, "name" TEXT NOT NULL, "mimeType" TEXT NOT NULL, "fileKey" TEXT NOT NULL, "size" INTEGER NOT NULL, "sha256" TEXT NOT NULL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE UNIQUE INDEX "CatalogAsset_fileKey_key" ON "CatalogAsset"("fileKey");
+CREATE INDEX "CatalogAsset_shop_idx" ON "CatalogAsset"("shop");
+CREATE TABLE "CatalogSettings" ("shop" TEXT NOT NULL PRIMARY KEY, "json" TEXT NOT NULL, "revision" INTEGER NOT NULL DEFAULT 1, "updatedAt" DATETIME NOT NULL);
+CREATE TABLE "CatalogRelease" ("id" TEXT NOT NULL PRIMARY KEY, "shop" TEXT NOT NULL, "json" TEXT NOT NULL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX "CatalogRelease_shop_createdAt_idx" ON "CatalogRelease"("shop", "createdAt");
+CREATE TABLE "CatalogPublication" ("shop" TEXT NOT NULL PRIMARY KEY, "releaseId" TEXT NOT NULL, "updatedAt" DATETIME NOT NULL);

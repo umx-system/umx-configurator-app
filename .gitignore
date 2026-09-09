@@ -40,6 +40,12 @@ logs/
 *.sqlite
 *.sqlite3
 *.db
+*.sqlite-journal
+*.sqlite-shm
+*.sqlite-wal
+*.db-journal
+*.db-shm
+*.db-wal
 *.sql.gz
 *.dump
 *.glb
@@ -54,3 +60,6 @@ logs/
 .vscode/
 .tmp/
 tmp/
+.shopify.lock
+shopify.app.development.toml
+shopify.app.production.toml

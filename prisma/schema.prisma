@@ -1,0 +1,99 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
+// enough when changing adapters.
+// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+  refreshToken        String?
+  refreshTokenExpires DateTime?
+}
+
+model ModelDraft {
+  id                       String   @id @default(uuid())
+  shop                     String
+  modelId                  String?
+  configJson               String   @default("{}")
+  label                    String
+  shortLabel               String
+  catalogCode              String?
+  note                     String   @default("")
+  widthMm                  Float
+  depthMm                  Float
+  heightMm                 Float
+  frontWidthMm             Float?
+  gridWidth                Int
+  gridHeight               Int
+  placement                String   @default("grid")
+  placementYOffsetMm       Float    @default(0)
+  supportsMarineBoardColor Boolean  @default(false)
+  previewTransform         String   @default("scene")
+  fileKey                  String   @unique
+  fileName                 String
+  fileSize                 Int
+  fileSha256               String
+  revision                 Int      @default(1)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([shop, catalogCode])
+  @@unique([shop, modelId])
+  @@index([shop, updatedAt])
+}
+
+model CatalogAsset {
+  id        String   @id @default(uuid())
+  shop      String
+  name      String
+  mimeType  String
+  fileKey   String   @unique
+  size      Int
+  sha256    String
+  createdAt DateTime @default(now())
+  @@index([shop])
+}
+
+model CatalogSettings {
+  shop      String   @id
+  json      String
+  revision  Int      @default(1)
+  updatedAt DateTime @updatedAt
+}
+
+model CatalogRelease {
+  id        String   @id @default(uuid())
+  shop      String
+  json      String
+  createdAt DateTime @default(now())
+  @@index([shop, createdAt])
+}
+
+model CatalogPublication {
+  shop      String   @id
+  releaseId String
+  updatedAt DateTime @updatedAt
+}

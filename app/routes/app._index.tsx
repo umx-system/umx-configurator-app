@@ -6,7 +6,6 @@ import { data, Form, Link, useLoaderData, useNavigation } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "../shopify.server";
 import { models } from "../services/models.server";
-import { formatFileSize } from "../lib/model-contract";
 import "../styles/models.css";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -93,12 +92,9 @@ export default function ModelLibrary() {
                 <tr>
                   <th>模块</th>
                   <th>尺寸 · mm</th>
-                  <th>占格 / 放置</th>
-                  <th>模型文件</th>
                   <th className="audience-cell">零售</th>
                   <th className="audience-cell">企业</th>
                   <th className="audience-cell">内部</th>
-                  <th>更新日期</th>
                   <th>状态</th>
                 </tr>
               </thead>
@@ -176,7 +172,6 @@ function ModelRow({
 }) {
   const [audiences, setAudiences] = useState(draft.audiences);
   const [revision, setRevision] = useState(draft.revision);
-  const [updatedAt, setUpdatedAt] = useState(draft.updatedAt);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
@@ -208,7 +203,6 @@ function ModelRow({
       if (!response.ok || !result.ok)
         throw new Error(result.message || "保存失败，请重试");
       setRevision(result.revision);
-      setUpdatedAt(result.updatedAt);
       setSaved(true);
     } catch (cause) {
       setAudiences(previous);
@@ -240,18 +234,6 @@ function ModelRow({
           .join(" × ")}
         <span className="cell-detail">宽 × 深 × 高</span>
       </td>
-      <td>
-        {draft.gridWidth} × {draft.gridHeight}
-        <span className="cell-detail">
-          {draft.placement === "top" ? "顶部安装" : "网格内安装"}
-        </span>
-      </td>
-      <td>
-        <span className="file-cell" title={draft.fileName}>
-          {draft.fileName}
-        </span>
-        <span className="cell-detail">{formatFileSize(draft.fileSize)}</span>
-      </td>
       {audienceOptions.map(([value, label]) => (
         <td className="audience-cell" key={value}>
           <button
@@ -267,10 +249,6 @@ function ModelRow({
           </button>
         </td>
       ))}
-      <td className="mono">
-        {new Date(updatedAt).toISOString().slice(0, 10)}
-        <span className="cell-detail">修订 {revision}</span>
-      </td>
       <td>
         <span className="draft-badge">
           {publishedRevision === revision
